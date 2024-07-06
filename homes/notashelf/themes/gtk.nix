@@ -5,8 +5,9 @@
   lib,
   ...
 }: let
-  inherit (lib) mkIf;
+  inherit (lib.modules) mkIf;
   inherit (osConfig.modules) device;
+
   cfg = osConfig.modules.style;
 
   acceptedTypes = ["laptop" "desktop" "hybrid" "lite"];
@@ -17,18 +18,18 @@ in {
     in ["${schema}/share/gsettings-schemas/${schema.name}"];
 
     home = {
-      packages = with pkgs; [
-        glib # gsettings
-        cfg.gtk.theme.package
-        cfg.gtk.iconTheme.package
-      ];
+      packages = [pkgs.glib]; # gsettings
 
       sessionVariables = {
-        # set GTK theme to the name specified by the gtk theme package
-        GTK_THEME = "${cfg.gtk.theme.name}";
+        # Set GTK_THEME variable to the name of the theme package
+        # in our theming module.
+        GTK_THEME = cfg.gtk.theme.name;
 
-        # gtk applications should use filepickers specified by xdg
-        GTK_USE_PORTAL = "${toString (lib.boolToNum cfg.gtk.usePortal)}";
+        # Tell GTK applications to use the file-pickers provided by
+        # xdg-desktop-portal-gtk. This gives us a somewhat consistent
+        # file picker, and fixes issues with some Flatpak apps that
+        # use GTK backend(s).
+        GTK_USE_PORTAL = toString (lib.boolToNum cfg.gtk.usePortal);
       };
     };
 
@@ -60,29 +61,44 @@ in {
       };
 
       gtk3.extraConfig = {
+        # Lets be easy on the eyes. This should be easy to make dependent on
+        # the "variant" of the theme, but I never use a light theme anyway.
+        gtk-application-prefer-dark-theme = true;
+
+        # Decorations
+        gtk-decoration-layout = "appmenu:none";
         gtk-toolbar-style = "GTK_TOOLBAR_BOTH";
         gtk-toolbar-icon-size = "GTK_ICON_SIZE_LARGE_TOOLBAR";
-        gtk-decoration-layout = "appmenu:none";
         gtk-button-images = 1;
         gtk-menu-images = 1;
+
+        # Silence bells and whistles, quite literally.
+        gtk-error-bell = 0;
         gtk-enable-event-sounds = 0;
         gtk-enable-input-feedback-sounds = 0;
+
+        # Fonts
         gtk-xft-antialias = 1;
         gtk-xft-hinting = 1;
         gtk-xft-hintstyle = "hintslight";
-        gtk-error-bell = 0;
-        gtk-application-prefer-dark-theme = true;
       };
 
       gtk4.extraConfig = {
+        # Prefer dark theme.
+        gtk-application-prefer-dark-theme = true;
+
+        # Decorations.
         gtk-decoration-layout = "appmenu:none";
+
+        # Sounds, again.
+        gtk-error-bell = 0;
         gtk-enable-event-sounds = 0;
         gtk-enable-input-feedback-sounds = 0;
+
+        # Fonts, you know the drill.
         gtk-xft-antialias = 1;
         gtk-xft-hinting = 1;
         gtk-xft-hintstyle = "hintslight";
-        gtk-error-bell = 0;
-        gtk-application-prefer-dark-theme = true;
       };
     };
   };

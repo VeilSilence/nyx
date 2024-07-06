@@ -2,45 +2,20 @@
   # https://github.com/NotAShelf/nyx
   description = "My vastly overengineered monorepo for everything NixOS";
 
-  outputs = {flake-parts, ...} @ inputs:
-    flake-parts.lib.mkFlake {inherit inputs;} ({withSystem, ...}: {
+  outputs = inputs:
+    inputs.flake-parts.lib.mkFlake {inherit inputs;} {
+      imports = [
+        ./parts # Parts of the flake that are used to construct the final flake.
+        ./hosts # Entrypoint for host configurations of my systems.
+      ];
+
       # Systems for which the attributes of `perSystem` will be built
       # add more if they can be supported...
       #  - x86_64-linux: Desktops, laptops, servers
       #  - aarch64-linux: ARM-based devices, PoC server and builders
       #  - ...
       systems = import inputs.systems;
-
-      # Imports for constructing a final flake to be built.
-      imports = [
-        # Imported
-        inputs.flake-parts.flakeModules.easyOverlay
-        inputs.treefmt-nix.flakeModule
-
-        # Explicitly import parts of the flake, which allows me to build the
-        # "final flake" from various parts, arranged in a way that makes
-        # sense to me the most. By convention, things that would usually
-        # go to flake.nix should have its own file in the `flake/` directory.
-        ./flake/apps # apps provided by the flake
-        ./flake/checks # checks that are performed on `nix flake check`
-        ./flake/lib # extended library on top of `nixpkgs.lib`
-        ./flake/modules # nixos and home-manager modules provided by this flake
-        ./flake/pkgs # packages exposed by the flake
-        ./flake/pre-commit # pre-commit hooks, performed before each commit inside the devShell
-        ./flake/templates # flake templates
-
-        ./flake/args.nix # args that are passed to the flake, moved away from the main file
-        ./flake/deployments.nix # deploy-rs configurations for active hosts
-        ./flake/fmt.nix # various formatter configurations for this flake
-        ./flake/iso-images.nix # local installation media
-        ./flake/shell.nix # devShells exposed by the flake
-      ];
-
-      flake = {
-        # Entry-point for NixOS configurations.
-        nixosConfigurations = import ./hosts {inherit inputs withSystem;};
-      };
-    });
+    };
 
   inputs = {
     # global, so they can be `.follow`ed
@@ -222,7 +197,7 @@
     neovim-flake = {
       url = "github:NotAShelf/nvf";
       inputs = {
-        nixpkgs.follows = "nixpkgs-small";
+        nixpkgs.follows = "nixpkgs";
         nil.follows = "nil";
         flake-utils.follows = "flake-utils";
         flake-parts.follows = "flake-parts";
@@ -302,22 +277,5 @@
       url = "github:hyprwm/hyprland-plugins";
       inputs.hyprland.follows = "hyprland";
     };
-  };
-
-  nixConfig = {
-    extra-substituters = [
-      "https://nix-community.cachix.org"
-      "https://hyprland.cachix.org"
-      "https://cache.privatevoid.net"
-      "https://nyx.cachix.org"
-    ];
-
-    extra-trusted-public-keys = [
-      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
-      "cache.privatevoid.net:SErQ8bvNWANeAvtsOESUwVYr2VJynfuc9JRwlzTTkVg="
-      "notashelf.cachix.org-1:VTTBFNQWbfyLuRzgm2I7AWSDJdqAa11ytLXHBhrprZk="
-      "nyx.cachix.org-1:xH6G0MO9PrpeGe7mHBtj1WbNzmnXr7jId2mCiq6hipE="
-    ];
   };
 }

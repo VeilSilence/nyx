@@ -10,11 +10,16 @@
   sys = modules.system;
   prg = sys.programs;
 
-  catppuccin-mocha = pkgs.fetchFromGitHub {
-    owner = "catppuccin";
-    repo = "discord";
-    rev = "7d9808eaf663f9c61824fcd1be810dce0fe4a7af";
-    hash = "sha256-dJsMA8SiRMtptdsMpgdilP6U/i+Tp7a4mS1I3x2ayu0=";
+  # Fetching mocha theme from catppuccin/discord actually just fetches
+  # a stylesheet that imports this url in typical Catppuccin nonsense.
+  # Instead of adding this overhead (and a stupid sheet with a web import)
+  # we can simply fetch the stylesheet that is being imported. In the future
+  # I hope the Catppuccin team can get their heads out of their asses and
+  # start publishing *actual releases* for once.
+  # P.S. why does your stupid theme depend on yarn build? It's a stylesheet.
+  catppuccin-mocha-css = pkgs.fetchurl {
+    url = "https://catppuccin.github.io/discord/dist/catppuccin-mocha.theme.css";
+    hash = "sha256-yyT7hxXNHd633wJ3vgwIstt6JGUfsp8pRkYNfz/sRQY=";
   };
 
   openasar-git = pkgs.fetchFromGitHub {
@@ -30,7 +35,7 @@ in {
     ];
 
     xdg.configFile = {
-      "WebCord/Themes/mocha".source = "${catppuccin-mocha}/themes/mocha.theme.css";
+      "WebCord/Themes/mocha".source = catppuccin-mocha-css;
     };
 
     # TODO: maybe this should be under services/global because technically it's not an app
@@ -40,9 +45,17 @@ in {
       enable = true;
       package = pkgs.arrpc.overrideAttrs {
         pname = "arrpc";
-        version = "3.4.0";
-
+        version = "0-unstable-2024-04-24";
         src = openasar-git;
+
+        patches = [
+          # Improve game detection for Linux
+          # <https://github.com/OpenAsar/arrpc/pull/92>
+          (pkgs.fetchpatch {
+            url = "https://patch-diff.githubusercontent.com/raw/OpenAsar/arrpc/pull/92.patch";
+            hash = "sha256-AHa4FzXJn7bcZ+35DdmAHP/4X3g7//mwp/ggIKvalpw=";
+          })
+        ];
       };
     };
   };

@@ -1,6 +1,5 @@
 <h1 id="header" align="center">
-  <!-- Make sure that the image path is always valid, despite however stupid a repo restructure might be. -->
-  <img src="https://github.com/NixOS/nixos-artwork/blob/c68a508b95baa0fcd99117f2da2a0f66eb208bbf/logo/nix-snowflake-colours.svg" width="96px" height="96px" />
+  <img src=".github/assets/nix-snowflake-colours.svg" width="128px" height="128px" />
   <br>
   Nýx
 </h1>
@@ -25,6 +24,56 @@
   Screenshot last updated <b>2024-03-19</b>
 </p>
 
+## Preface
+
+Before you proceed, I would like to direct your attention to the
+[credits](#credits) section below, where I pay tribute to the individuals who
+have contributed to this project. Whether through code references, suggestions,
+bug reports, or simply moral support, they have my most sincere gratitude.
+
+### Disclaimer
+
+[resources section]: #cool-resources
+[nix blog]: https://nyx.notashelf.dev
+[license]: #license
+
+<!-- deno-fmt-ignore-start -->
+
+> [!CAUTION]
+> As I physically cannot stop tinkering and messing around with my
+> configuration, **nothing in this repository (including the README and the
+> overview sections in it) should be considered final**. This is my
+> configuration, not a framework. Do keep in mind that I make no promise of
+> stability or support. If something breaks, that will be your responsibility.
+> Please do not allow yourself to be fooled by the sheer amount of documentation
+> effort that has gone into this project. **This is not a public framework**,
+> and it never will be. It will receive changes, on almost a daily basis and
+> possibly in a half-broken state.
+>
+> I should also mention that almost all of the configurations contained within
+> this repository, in some shape or form, contain age encrypted secrets - which,
+> to you dear reader, means that they **cannot** be built and replicated
+> successfully, at least in theory (unless you know a way to revert age
+> encryption, in which case please let me know!) I invite you to go through the
+> modules and countless lines of Nix I have written, but I would strongly advise
+> against attempting to boot any of those configurations unless you are me.
+>
+> There exists a [resources section] that I _strongly_ encourage you to check
+> out, which you can use to start building your own configuration. I also
+> document some of my experiences in my [nix blog] for your convenience.
+> Otherwise, please feel free to dissect this configuration and borrow bits that
+> may appear interesting to you - but _please_ respect my [license] while doing
+> so!
+>
+> To re-iterate: **this is not a public framework**. Please **do not** try to
+> run this configuration, or to rip off specific bits. It will cause much pain
+> and suffering in addition to robbing you the joys of learning something by
+> yourself. By doing so, you would have to learn my specific design choices _on
+> top of Nix/NixOS_ whereas you could create something that suits your own
+> needs.
+
+<!-- deno-fmt-ignore-end -->
+
 ## High Level Overview
 
 This is a high level overview of this monorepo, containing configurations for
@@ -33,101 +82,68 @@ some point in time. You will find below a list of my hosts and their
 specifications, accompanied by a somewhat maintained list of features of this
 configuration and my design considerations.
 
-### Disclaimer
-
-As I physically cannot stop tinkering with my configuration, nothing in this
-repository (including the overview sections) should be considered final. As
-such, it is **not recommended to be used as a template (nor is designed to be
-one)** but you are welcome to browse the codebase to your liking, you may find
-bits that are interesting or/and useful to you.
-
-Do keep in mind that I make no promise of stability or support. If something
-breaks, that will be your responsibility. Please do not allow yourself to be
-fooled by the sheer amount of documentation effort that has gone into this
-project. It is not a public framework, never will be. It will receive changes,
-on almost a daily basis and possibly in a half-broken state.
-
-<!-- deno-fmt-ignore-start -->
-
-> [!CAUTION]
-> Almost all of the configurations contained within this repository,
-> in some shape or form, contain age encrypted secrets - which, to you dear
-> reader, means that they **cannot** be built and replicated successfully, at
-> least in theory. I invite you to go through the modules and countless lines of
-> Nix I have written, but I would strongly advise against attempting to boot any
-> of those configurations unless you are me. You should also note that
-> this is **not** a community framework.
-
-<!-- deno-fmt-ignore-end -->
-
-Before you proceed, I would like to point you towards the [credits](#credits)
-section below where I pay tribute to the individuals who have contributed to
-this project, whether through code reference, suggestions, bug reports, or
-simply moral support. They have my most sincere thanks.
-
 ### Repo Structure
 
 [flake schemas]: https://determinate.systems/posts/flake-schemas
 [Home-Manager]: https://github.com/nix-community/home-manager
 
-- [flake.nix](flake.nix) Ground zero of my system configuration. Declaring
+- [`flake.nix`](flake.nix) Ground zero of my system configuration. Declaring
   entrypoints
-- [docs](docs)The documentation for my flake repository
-  - [notes](docs/notes) Notes from tedious or/and under-documented processes I
-    have gone through. More or less a blog
-  - [cheatsheet](docs/notes/cheatsheet.md) Useful tips that are hard to
+- [`docs`](docs)The documentation for my flake repository
+  - [`notes`](docs/notes) Notes from tedious or/and under-documented processes I
+    have gone through. More or less a blog, live at https://nyx.notashelf.dev
+  - [`cheatsheet`](docs/notes/cheatsheet.md) Useful tips that are hard to
     memorize, but easy to write down
-- [flake/](flake) Individual parts of my flake, powered by flake-parts
-  - [lib](flake/lib) Personal library of functions and utilities
-  - [apps](flake/apps) Basic executables for maintenance jobs
-  - [checks](flake/checks) Additional checks to build on `nix flake check`
-  - [lib](flake/lib) Personal library of functions and utilities
-  - [modules](flake/modules) Modules provided by my flake for both internal and
-    public use
-  - [npins](flake/npins) Additional pinned dependencies, managed via `npins`
-  - [pkgs](flake/pkgs) Packages exported by my flake
-  - [pre-commit](flake/pre-commit) pre-commit hooks via `git-hooks.nix`
-  - [templates](flake/templates) Templates for initializing new flakes. Provides
-    some language-specific flakes
-  - [args.nix](flake/args.nix) Args that will be shared across, or exposed by
+- [`parts/`](parts) Individual parts of my flake, powered by flake-parts
+  - [`apps`](parts/apps) Basic executables for maintenance jobs
+  - [`checks`](parts/checks) Additional checks to build on `nix flake check`
+  - [`lib`](parts/lib) Personal library of functions and utilities
+  - [`modules`](parts/modules) NixOS/Home-manager modules provided by my flake
+    for both internal and public use
+  - [`npins`](parts/npins) Additional pinned dependencies, managed via `npins`
+  - [`pkgs`](parts/pkgs) Packages exported by my flake
+  - [`pre-commit`](parts/pre-commit) pre-commit hooks via `git-hooks.nix`
+  - [`templates`](parts/templates) Templates for initializing new flakes.
+    Provides some language-specific flakes
+  - [`args.nix`](parts/args.nix) Args that will be shared across, or exposed by
     the flake
-  - [deployments.nix](flake/deployments.nix) Host setups for deploy-rs,
+  - [`deployments.nix`](parts/deployments.nix) Host setups for deploy-rs,
     currently a work in progress
-  - [fmt.nix](flake/fmt.nix) Various formatting options for `nix fmt` and
+  - [`fmt.nix`](parts/fmt.nix) Various formatting options for `nix fmt` and
     friends
-  - [iso-images.nix](flake/iso-images.nix) Configurations for my home-built iso
-    images, to be exposed in the flake schema
-  - [keys.nix](flake/keys.nix) My public keys to be shared across the flake
-  - [shell.nix](flake/shell.nix) Local devShell configurations
-- [homes](homes) My personalized [Home-Manager] configurations.
-- [hosts](hosts) Per-host configurations that contain machine specific
+  - [`iso-images.nix`](parts/iso-images.nix) Configurations for my home-built
+    iso images, to be exposed in the flake schema
+  - [`keys.nix`](parts/keys.nix) My public keys to be shared across the flake
+  - [`shell.nix`](parts/shell.nix) Local devShell configurations
+- [`homes`](homes) My personalized [Home-Manager] configurations.
+- [`hosts`](hosts) Per-host configurations that contain machine specific
   instructions and setups
-- [modules](modules) Modularized NixOS configurations
-  - [core](modules/core) The core module that all systems depend on
-    - [common](modules/core/common) Module configurations shared between all
+- [`modules`](modules) Modularized NixOS configurations
+  - [`core`](modules/core) The core module that all systems depend on
+    - [`common`](modules/core/common) Module configurations shared between all
       hosts (except installers)
-    - [profiles](modules/core/profiles) Pluggable internal module system, for
+    - [`profiles`](modules/core/profiles) Pluggable internal module system, for
       providing overrides based on host declarations (e.g. purpose)
-    - [roles](modules/core/roles) A profile-like system that work through
+    - [`roles`](modules/core/roles) A profile-like system that work through
       imports and ship predefined configurations
-  - [extra](modules/extra) Extra modules that are rarely imported
-    - [shared](modules/extra/shared) Modules that are both shared for outside
+  - [`extra`](modules/extra) Extra modules that are rarely imported
+    - [`shared`](modules/extra/shared) Modules that are both shared for outside
       consumption, and imported by the flake itself
-    - [exported](modules/extra/exported) Modules that are strictly for outside
+    - [`exported`](modules/extra/exported) Modules that are strictly for outside
       consumption and are not imported by the flake itself
-  - [options](modules/options) Definitions of module options used by common
+  - [`options`](modules/options) Definitions of module options used by common
     modules
-    - [meta](modules/options/meta) Internal, read-only module that defines host
-      capabilities based on other options
-    - [device](modules/options/device) Hardware capabilities of the host
-    - [documentation](modules/options/docs) Local module system documentation
-    - [system](modules/options/system) OS-wide configurations for generic
+    - [`meta`](modules/options/meta) Internal, read-only module that defines
+      host capabilities based on other options
+    - [`device`](modules/options/device) Hardware capabilities of the host
+    - [`documentation`](modules/options/docs) Local module system documentation
+    - [`system`](modules/options/system) OS-wide configurations for generic
       software and firmware on system level
-    - [theme](modules/options/theme) Active theme configurations ranging from QT
-      theme to shell colors
-    - [usrEnv](modules/options/usrEnv) userspace exclusive configurations. E.g.
-      lockscreen or package sets
-- [secrets](secrets) Agenix secrets
+    - [`theme`](modules/options/theme) Active theme configurations ranging from
+      QT theme to shell colors
+    - [`usrEnv`](modules/options/usrEnv) userspace exclusive configurations.
+      E.g. lockscreen or package sets
+- [`secrets`](secrets) Agenix secrets
 
 ### Notable Features
 
@@ -137,6 +153,7 @@ simply moral support. They have my most sincere thanks.
 [flake-parts]: https://flake.parts
 [impermanence]: https://github.com/nix-community/impermanence
 
+- **Flakes enabled** - leans heavily into flake-exclusive features of Nix
 - **All-in-one** - Servers, desktops, laptops, virtual machines and anything you
   can think of. Managed in one place.
   - **Sane Defaults** - The modules attempt to bring the most sane defaults,
@@ -173,6 +190,8 @@ simply moral support. They have my most sincere thanks.
 - **Encryption Ready** - Supports and actively utilizes full disk encryption.
 - **Wayland First** - Leaves Xorg in the past where it belongs. Everything is
   configured around Wayland, with Xorg only as a fallback.
+- **Custom Xanmod Kernel** with a wide variety of patches to strip unneeded
+  modules.
 
 ### Rules/Design Considerations
 
@@ -193,7 +212,7 @@ make sense of certain decisions that are made.
   description of the change.
 - **alejandra** is the only Nix formatter that shall be used within this
   repository. nixfmt and nixpkgs-fmt both advertise ugly and confusing diffs,
-  which I dislike. Some of alejandra's quirks (e.g. lists) can be avoided with
+  which I dislike. Some of Alejandra's quirks (e.g. lists) can be avoided with
   minor additions to the code.
 - Backwards imports **should** be avoided wherever applicable.
 - The repository should remain modular, and enabled options must **never**
@@ -209,6 +228,10 @@ make sense of certain decisions that are made.
   - While accessing standard library functions, the call to library must be
     explicit. An example to this would be: `inherit (lib.modules) mkIf;` instead
     of repeating `lib.mkIf` or `lib.modules.mkIf` every time it is used.
+  - `with pkgs;` _is_ fine, however its scope must be kept small. The biggest
+    scope in which it shall be allowed is the smallest scope possible, e.g.,
+    `environment.systemPackages = with pkgs; [ ];`. Anything larger than that
+    should be avoided at all costs.
 
 ### Goals/Non-goals
 
@@ -236,6 +259,15 @@ repository. Those goals are:
 
 ## Host Specifications
 
+<!-- deno-fmt-ignore-start -->
+
+> [!WARNING]
+> This section may be out of date as I constantly add, remove or re-purpose my
+> hosts across a single network. Hostnames are assigned on a per-host basiis and
+> are permanent, type and arch on another hand are subject to change.
+
+<!-- deno-fmt-ignore-end -->
+
 | Name         | Description                                                                                       |  Type   |     Arch      |
 | :----------- | :------------------------------------------------------------------------------------------------ | :-----: | :-----------: |
 | `enyo`       | Day-to-day desktop workstation boasting a full AMD system.                                        | Desktop | x86_64-linux  |
@@ -252,17 +284,19 @@ repository. Those goals are:
 | `gaea`       | Custom live media, used as an installer                                                           |   ISO   | x86_64-linux  |
 | `erebus`     | Air-gapped virtual machine/live-iso configuration for sensitive jobs                              |   ISO   | x86_64-linux  |
 
-## Credits & Special Thanks to
+## Credits & Special Thanks
 
-[atrocious abstractions]: flake/lib/builders.nix
+[atrocious abstractions]: parts/lib/builders.nix
 
-My special thanks go to [fufexan](https://github.com/fufexan) for convincing me
-to use NixOS and sticking around to answer my most stupid and deranged
-questions, as well as my [atrocious abstractions].
+My most sincere thanks go to [fufexan](https://github.com/fufexan) for
+convincing me to use NixOS and sticking around to answer my most stupid and
+deranged questions, as well as my [atrocious abstractions]. Without his help, I
+would not be able to stand where I do.
 
-And to [sioodmy](https://github.com/sioodmy) which my configuration is initially
-based on. The simplicity of his configuration flake allowed me to take a
-foothold in the Nix world.
+I also wish to extend my thanks to [sioodmy](https://github.com/sioodmy) which
+my configuration was initially based on. Though layouts and files have since
+changed, the core principals and ideas remain. The simplicity of his
+configuration flake allowed me to take a foothold in the Nix world.
 
 ### Awesome People
 
@@ -282,7 +316,6 @@ thanks to all of those people and any others that I might have forgotten.
 Pretend I haven't credited those people (but I will, because they are equally
 awesome and I appreciate them)
 
-[vaxry](https://github.com/vaxerski) -
 [gerg-l (bald frog)](https://github.com/gerg-l) -
 [eclairevoyant](https://github.com/eclairevoyant/) -
 [FrothyMarrow](https://github.com/frothymarrow) -
@@ -291,7 +324,8 @@ awesome and I appreciate them)
 [n3oney](https://github.com/n3oney) -
 [Raidenovich](https://github.com/raidenovich) -
 [jacekpoz](https://github.com/jacekpoz) -
-[Vagahbond](https://github.com/Vagahbond)
+[Vagahbond](https://github.com/Vagahbond) -
+[vaxry](https://github.com/vaxerski) -
 
 ### Honorable Mentions
 
@@ -316,13 +350,21 @@ strongly recommend that you read in no particular order.
 
 ### Readings
 
-- [Zero to Nix](https://zero-to-nix.com/)
-- [Nix Pills](https://nixos.org/guides/nix-pills/)
+#### Blogs
+
+- [Astrid's blog](https://astrid.tech/t/nixos/)
+- [Jade Lovelace's blog](https://jade.fyi/)
 - [Xe Iaso's blog](https://xeiaso.net/blog)
-- [Vinícius Müller's Blog](https://viniciusmuller.github.io) (no longer exists)
 - [Viper's Blog](https://ayats.org/)
 - [Solène's Blog](https://dataswamp.org/~solene)
+- [Vinícius Müller's Blog](https://viniciusmuller.github.io) (`/blog` no longer
+  exists)
 - [...my own "blog"?](https://notashelf.github.io/nyx/)
+
+#### Guides & Other Resources
+
+- [Zero to Nix](https://zero-to-nix.com/)
+- [Nix Pills](https://nixos.org/guides/nix-pills/)
 
 ### Software
 
@@ -382,15 +424,6 @@ would be highly appreciated. Please do not be one of the people who upstream my
 commits without any consideration to my time and efforts.
 
 ---
-
-<h2 align="center">Preview</h2>
-
-<p id="preview" align="center">
-   <img src=".github/assets/desktop_preview.png" width="640" alt="Desktop Preview" />
-</p>
-<p align="center">
-   Screenshot last updated <b>2023-12-09</b>
-</p>
 
 <div align="right">
   <a href="#readme">Back to the Top</a>

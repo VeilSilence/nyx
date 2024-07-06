@@ -1,7 +1,7 @@
 {
+  osConfig,
   pkgs,
   lib,
-  osConfig,
   ...
 }: let
   inherit (lib.modules) mkIf mkMerge;
@@ -15,48 +15,35 @@ in {
   config = mkIf (builtins.elem dev.type acceptedTypes && sys.video.enable) {
     qt = {
       enable = true;
-      platformTheme.name = mkIf cfg.forceGtk "gtk"; # just an override for QT_QPA_PLATFORMTHEME, takes “gtk”, “gnome”, “qtct” or “kde”
+      platformTheme = {
+        # Sets QT_QPA_PLATFORMTHEME, takes "gtk", "gtk3",  "adwaita", "kde" and a few others.
+        name = mkIf cfg.forceGtk "gtk3";
+        package = null; # libraries associated with the platformtheme, we add those manually
+      };
 
-      style = mkIf (!cfg.forceGtk) {
-        name = cfg.qt.theme.name;
-        package = cfg.qt.theme.package;
+      style = {
+        # Sets QT_STYLE_OVERRIDE, takes "gtk2, "adwaita" (and variants), "breeze", "kvantum" and a few others."
+        name = mkIf cfg.useKvantum "kvantum";
+        package = null; # same as above
       };
     };
-
-    /*
-    home.packages = with pkgs;
-      [
-        libsForQt5.qt5ct
-        breeze-icons
-
-        # libraries to ensure that "gtk" platform theme works
-        # as intended after the following PR:
-        # <https://github.com/nix-community/home-manager/pull/5156>
-        libsForQt5.qtstyleplugins
-        qt6Packages.qt6gtk2
-
-        # add theme package to path just in case
-        cfg.qt.theme.package
-      ]
-      ++ optionals cfg.useKvantum [
-        qt6Packages.qtstyleplugin-kvantum
-        libsForQt5.qtstyleplugin-kvantum
-      ];
-    */
 
     home = {
       packages = with pkgs;
         mkMerge [
           [
-            # libraries and programs to ensure that qt applications load without issue
-            # breeze-icons is added as a fallback
+            # Libraries and programs to ensure
+            # that QT applications load witnout issues, e.g. missing libs.
             libsForQt5.qt5ct
             kdePackages.qt6ct
+
+            # Some KDE applications such as Dolphin try to fall back to Breeze
+            # theme icons. Lets make sure they're also found.
             kdePackages.breeze-icons
           ]
 
           (mkIf cfg.forceGtk [
-            # libraries to ensure that "gtk" platform theme works
+            # Libraries to ensure that "gtk" platform theme works
             # as intended after the following PR:
             # <https://github.com/nix-community/home-manager/pull/5156>
             libsForQt5.qtstyleplugins
@@ -64,61 +51,51 @@ in {
           ])
 
           (mkIf cfg.useKvantum [
-            # kvantum as a library and a program to theme qt applications
-            # this added here, however, this will not have an effect
+            # Kvantum as a library and a program to theme qt applications
+            # is added here, however, this will not have an effect
             # until QT_QPA_PLATFORMTHEME has been set appropriately
-            # we still write the config files for kvantum below
+            # we still write the config files for Kvantum below
             # but again, it is a no-op until the env var is set
-            qt6Packages.qtstyleplugin-kvantum
             libsForQt5.qtstyleplugin-kvantum
+            qt6Packages.qtstyleplugin-kvantum
           ])
         ];
 
       sessionVariables = {
-        # scaling - 1 means no scaling
+        # Scaling factor for QT applications. 1 means no scaling
         QT_AUTO_SCREEN_SCALE_FACTOR = "1";
 
-        # use wayland as the default backend, fallback to xcb if wayland is not available
+        # Use Wayland as the default backend, fallback to XCB if Wayland is not available
         QT_QPA_PLATFORM = "wayland;xcb";
 
-        # disable window decorations everywhere
+        # Disable QT specific window decorations everywhere
         QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
 
-        # remain backwards compatible with qt5
+        # Do remain backwards compatible with QT5 if possible.
         DISABLE_QT5_COMPAT = "0";
 
-        # tell calibre to use the dark theme, because the light one hurts my eyes
+        # Tell Calibre to use the dark theme, because the light one hurts my eyes.
         CALIBRE_USE_DARK_PALETTE = "1";
       };
     };
 
-    # write files required by KDE and kvantum
-    # those are not used if the user does not use KDE toolkits
-    # or kvantum respectively. we set those regardless
-    xdg.configFile = let
-      baseGhUrl = "https://raw.githubusercontent.com/catppuccin/Kvantum";
-    in {
-      # write ~/.config/kdeglobals based on the kdeglobals file the user has specified
-      # this option is a catch-all and not a set path because some programs specify different
-      # paths inside their kdeglobals package
-      "kdeglobals".source = cfg.qt.kdeglobals.source;
+    # Write configuration and theme packages required KDE and Kvantum respectively.
+    # Those tools aren't always used, but they are useful when the app looks for one
+    # of those engines before GTK, depsite our attempts to override.
+    xdg.configFile = {
+      # Write ~/.config/kdeglobals based on the kdeglobals file the user has specified.
+      "kdeglobals".source = cfg.qt.kdeglobals.colors;
 
+      # Write kvantum configuration, and the theme files required by the Catppuccin theme.
       "Kvantum/kvantum.kvconfig".source = (pkgs.formats.ini {}).generate "kvantum.kvconfig" {
-        General.theme = "catppuccin";
-        Applications.catppuccin = ''
+        General.theme = "Catppuccin";
+        Applications.Catppuccin = ''
           qt5ct, org.kde.dolphin, org.kde.kalendar, org.qbittorrent.qBittorrent, hyprland-share-picker, dolphin-emu, Nextcloud, nextcloud, cantata, org.kde.kid3-qt
         '';
       };
 
-      "Kvantum/catppuccin/catppuccin.kvconfig".source = builtins.fetchurl {
-        url = "${baseGhUrl}/main/src/Catppuccin-Mocha-Blue/Catppuccin-Mocha-Blue.kvconfig";
-        sha256 = "1f8xicnc5696g0a7wak749hf85ynfq16jyf4jjg4dad56y4csm6s";
-      };
-
-      "Kvantum/catppuccin/catppuccin.svg".source = builtins.fetchurl {
-        url = "${baseGhUrl}/main/src/Catppuccin-Mocha-Blue/Catppuccin-Mocha-Blue.svg";
-        sha256 = "0vys09k1jj8hv4ra4qvnrhwxhn48c2gxbxmagb3dyg7kywh49wvg";
-      };
+      "Kvantum/Catppuccin/Catppuccin.kvconfig".source = cfg.qt.kvantum.kvconfig;
+      "Kvantum/Catppuccin/Catppuccin.svg".source = cfg.qt.kvantum.svg;
     };
   };
 }

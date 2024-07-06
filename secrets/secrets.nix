@@ -1,5 +1,5 @@
 let
-  keys = import ../flake/keys.nix;
+  keys = import ../parts/keys.nix;
   inherit (keys) servers workstations;
   inherit (keys) mkGlobal;
 in {
@@ -17,6 +17,7 @@ in {
   "service/vaultwarden.age".publicKeys = mkGlobal servers;
   "service/wg.age".publicKeys = mkGlobal servers;
   "service/searx.age".publicKeys = mkGlobal servers;
+  "service/forgejo-mailer-password.age".publicKeys = mkGlobal servers;
   "service/forgejo-runner-token.age".publicKeys = mkGlobal servers;
   "service/forgejo-runner-config.age".publicKeys = mkGlobal servers;
   "service/harmonia.age".publicKeys = mkGlobal servers;
